@@ -1,8 +1,8 @@
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 
 async function main(){
-    const provider = new WsProvider('ws://192.168.31.129:9944');
-    //const provider = new WsProvider('wss://rpc2.3dpass.org');
+    //const provider = new WsProvider('ws://192.168.31.129:9944');
+    const provider = new WsProvider('wss://rpc2.3dpass.org');
     const api = await ApiPromise.create({ provider });
 
     //api.rpc.chain.getHeader().then(console.log);
