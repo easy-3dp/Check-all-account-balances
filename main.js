@@ -1,8 +1,7 @@
 const { ApiPromise, WsProvider } = require('@polkadot/api');
 
 async function main(){
-    //const provider = new WsProvider('ws://192.168.31.129:9944');
-    const provider = new WsProvider('wss://rpc2.3dpass.org');
+    const provider = new WsProvider('wss://rpc.3dpass.org');
     const api = await ApiPromise.create({ provider });
 
     //api.rpc.chain.getHeader().then(console.log);
@@ -26,7 +25,8 @@ async function main(){
     for (const user of users) {
         let account = Buffer.from(user[0].slice(-32)).toString('hex');
         let balance = (user[1].data.free/1000000000000).toString();
-        console.log(`0x${account}, ${balance}`);
+        let transferable = ((user[1].data.free-user[1].data.reserved-Math.max(user[1].data.miscFrozen, user[1].data.feeFrozen))/1000000000000).toString();
+        console.log(`0x${account}, ${balance}, ${transferable}`);
     }
 }
 
