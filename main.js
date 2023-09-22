@@ -31,6 +31,7 @@ async function main(){
         console.log(`0x${account}, ${balance.toString()/1000000000000}, ${transferable.toString()/1000000000000}`);
 
         total += balance;
+        totalTransferable += transferable;
 
         if (account == '608a961b5e9453cf703b18485cfcfb1ad9aed9930da3f80656f27a6ac12b135e' //Marketing budget
          || account == '62f15fae5a1ce17dd191d8f2d19776816548d92be01ecd0570d47e47bb951f74' //Private sale
@@ -46,12 +47,9 @@ async function main(){
          || account == 'fa343005718eb4c78a10e6e4515726ad0d870f268a10dbf799e9c81db66fb344'
         )
         official += balance;
-        else
-        totalTransferable += transferable;
 
-        if (account == '6d6f646c70792f74727372790000000000000000000000000000000000000000'
-       )
-       treasury += balance;
+        if (account == '6d6f646c70792f74727372790000000000000000000000000000000000000000')
+        treasury += balance;
 
        ++addressCount;
        if(balance >= 1000000000000n)
@@ -76,18 +74,18 @@ async function main(){
             addressCount99++;
     }
 
+    const value = await extractUsdValue();
 
-    console.log(`#${header}`);
-    console.log(`流通数${Parse(total)}`);
-    console.log(`官方账户${Parse(official)}`);
-    console.log(`国库${Parse(treasury)}`);
-    console.log(`官方直接控制量占总流通${(parseFloat((official+treasury).toString())/parseFloat(total.toString())*100).toFixed(2)}%`);
+    console.log(`${date()} #${header}`);
+    console.log(`总流通数${Parse(total)}，市值$${(parseFloat((total).toString())*value/1000000000000)}`);
+    console.log(`无锁流通数${Parse(totalTransferable)}，市值$${(parseFloat((totalTransferable).toString())*value/1000000000000)}`);
+    console.log(`官方账户${Parse(official)}，占总流通${(parseFloat((official).toString())/parseFloat(total.toString())*100).toFixed(2)}%`);
+    console.log(`国库${Parse(treasury)}，占总流通${(parseFloat((treasury).toString())/parseFloat(total.toString())*100).toFixed(2)}%`);
     console.log(`激活地址数${addressCount}`);
     console.log(`余额大于1地址数${addressCountMore1}`);
     console.log(`余额大于接近1M地址数${addressCountMore1M}`);
     console.log(`所有M大佬（前${addressCountMore1M}地址）占总流通${(parseFloat(totalM.toString())/parseFloat(total.toString())*100).toFixed(2)}%`);
     console.log(`垄断（占总流通99%）地址${addressCount99}`);
-    console.log(`去除官方和有锁的流通数${Parse(totalTransferable)}`);
 }
 
 function Parse(num) {
@@ -97,5 +95,38 @@ function Parse(num) {
     let numB = numInt-numM*1000000n;
     return `${numM}M${numB.toString().padStart(6, '0')}.${numDec.toString().padStart(12, '0')}`;
 }
+
+const fetch = require('node-fetch');
+
+async function downloadPage(url) {
+  try {
+    const response = await fetch(url);
+    const data = await response.text();
+    return data;
+  } catch (error) {
+    console.error(`Error downloading the page: ${error}`);
+  }
+}
+
+async function extractUsdValue() {
+    let page = await downloadPage('https://xeggex.com/asset/P3D');
+    const regex = /usdValue: '([\d.]+)'/;
+    const match = page.match(regex);
+    if (match && match[1]) {
+      return parseFloat(match[1]);
+    }
+    return null;
+}
+
+function date(){
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // 月份从 0 开始
+    const day = String(now.getDate()).padStart(2, '0');
+    
+    return `${year}.${month}.${day}`;
+}
+
+
 
 main();
